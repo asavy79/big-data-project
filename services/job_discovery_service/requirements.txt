@@ -1,0 +1,21 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Async Postgres + pgvector
+sqlalchemy[asyncio]>=2.0.35
+asyncpg>=0.30.0
+pgvector>=0.3.6
+
+# Validation & config
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# LangChain for RAG & embeddings
+langchain>=0.3.0
+langchain-google-vertexai>=2.0.0
+
+# GCP Pub/Sub messaging
+google-cloud-pubsub>=2.27.0
+
+# HTTP client for cron fetcher
+httpx>=0.28.0

@@ -1,0 +1,126 @@
+services:
+  # ------------------------------------------------------------------ #
+  #  PostgreSQL + pgvector
+  # ------------------------------------------------------------------ #
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-jobdb}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ------------------------------------------------------------------ #
+  #  Pub/Sub Emulator (local development)
+  # ------------------------------------------------------------------ #
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    volumes:
+      - ./scripts/pubsub-setup.sh:/pubsub-setup.sh:ro
+    entrypoint: ["/bin/bash", "/pubsub-setup.sh"]
+    environment:
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8085/v1/projects/${GCP_PROJECT_ID:-local-project}/topics | grep -q user-refresh-requested"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+
+  # ------------------------------------------------------------------ #
+  #  Job Discovery Service  (FastAPI + Pub/Sub worker)
+  # ------------------------------------------------------------------ #
+  job-discovery-service:
+    build:
+      context: ./services/job_discovery_service
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-jobdb}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-004}
+      RAPIDAPI_KEY: ${RAPIDAPI_KEY:-}
+      JSEARCH_QUERY: ${JSEARCH_QUERY:-software engineer in United States}
+      JSEARCH_DATE_POSTED: ${JSEARCH_DATE_POSTED:-3days}
+      JSEARCH_NUM_PAGES: ${JSEARCH_NUM_PAGES:-1}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-changeme}
+      PUBSUB_EMULATOR_HOST: pubsub-emulator:8085
+      GOOGLE_APPLICATION_CREDENTIALS: /gcp/adc.json
+    volumes:
+      - ~/.config/gcloud/application_default_credentials.json:/gcp/adc.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pubsub-emulator:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ #
+  #  User Service  (profile, auth, event dispatch, match history)
+  # ------------------------------------------------------------------ #
+  user-service:
+    build:
+      context: ./services/user_service
+    ports:
+      - "8002:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-jobdb}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-004}
+      PUBSUB_TOPIC_REFRESH: ${PUBSUB_TOPIC_REFRESH:-user-refresh-requested}
+      PUBSUB_SUBSCRIPTION_MATCHES: ${PUBSUB_SUBSCRIPTION_MATCHES:-matches-calculated-sub}
+      PUBSUB_EMULATOR_HOST: pubsub-emulator:8085
+      GOOGLE_APPLICATION_CREDENTIALS: /gcp/adc.json
+    volumes:
+      - ~/.config/gcloud/application_default_credentials.json:/gcp/adc.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pubsub-emulator:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ #
+  #  API Gateway  (Firebase auth → reverse proxy)
+  # ------------------------------------------------------------------ #
+  gateway:
+    build:
+      context: ./gateway
+    ports:
+      - "8000:8000"
+    environment:
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-big-data-project-f5241}
+      DEV_MODE: ${DEV_MODE:-true}
+      USER_SERVICE_URL: http://user-service:8000
+      JOB_SERVICE_URL: http://job-discovery-service:8000
+    depends_on:
+      - user-service
+      - job-discovery-service
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ #
+  #  Frontend  (React + Vite → nginx)
+  # ------------------------------------------------------------------ #
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+volumes:
+  pgdata:

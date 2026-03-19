@@ -1,0 +1,70 @@
+# ── Environment & secrets ─────────────────────────────────
+.env
+.env.*
+!.env.example
+frontend/.env.local
+frontend/.env.local.*
+
+# ── GCP credentials ──────────────────────────────────────
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+application_default_credentials.json
+service-account*.json
+credentials*.json
+*-key.json
+
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+.venv/
+venv/
+env/
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Node / Frontend ──────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+.npm
+.yarn/
+*.tsbuildinfo
+
+# ── IDE & editors ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Docker ───────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── OS ───────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── Misc caches ──────────────────────────────────────────
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.log

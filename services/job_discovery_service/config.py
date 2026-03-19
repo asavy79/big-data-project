@@ -1,0 +1,24 @@
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/jobdb"
+    gcp_project_id: str = ""
+    pubsub_subscription: str = "user-refresh-requested-sub"
+    pubsub_topic_matches: str = "matches-calculated"
+    vertex_ai_location: str = "us-central1"
+    embedding_model: str = "text-embedding-004"
+    embedding_dimensions: int = 768
+    internal_api_key: str = "changeme"
+
+    # JSearch (RapidAPI)
+    rapidapi_key: str = ""
+    jsearch_host: str = "jsearch.p.rapidapi.com"
+    jsearch_query: str = "software engineer in United States"
+    jsearch_date_posted: str = "3days"
+    jsearch_num_pages: int = 1
+
+    model_config = {"env_file": ".env", "extra": "ignore"}
+
+
+settings = Settings()
