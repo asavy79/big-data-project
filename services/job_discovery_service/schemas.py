@@ -11,6 +11,7 @@ class SearchFilters(BaseModel):
     remote: bool | None = None
     salary_min: int | None = None
     salary_max: int | None = None
+    skills: list[str] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -27,6 +28,7 @@ class JobResponse(BaseModel):
     salary_max: int | None = None
     url: str | None = None
     source: str | None = None
+    posted_at: datetime | None = None
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}

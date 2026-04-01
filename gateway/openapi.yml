@@ -1,0 +1,122 @@
+# GCP API Gateway configuration for JobMatch.
+#
+# Deploy with:
+#   gcloud api-gateway api-configs create CONFIG_NAME \
+#     --api=jobmatch-api \
+#     --openapi-spec=openapi.yml \
+#     --backend-auth-service-account=SA_EMAIL
+#
+# Replace YOUR_PROJECT_ID and the x-google-backend addresses with your
+# actual Cloud Run service URLs before deploying.
+
+swagger: "2.0"
+info:
+  title: JobMatch API Gateway
+  version: "1.0.0"
+  description: >
+    Routes authenticated requests to the User Service and public requests
+    to the Job Discovery Service.  Firebase Authentication is enforced on
+    all /api/user/* endpoints.
+
+host: "jobmatch-gateway-HASH.apigateway.YOUR_PROJECT_ID.cloud.goog"
+basePath: /
+
+schemes:
+  - https
+
+# ---------------------------------------------------------------------------
+# Firebase JWT security definition
+# ---------------------------------------------------------------------------
+securityDefinitions:
+  firebase:
+    authorizationUrl: ""
+    flow: implicit
+    type: oauth2
+    x-google-issuer: "https://securetoken.google.com/YOUR_PROJECT_ID"
+    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    x-google-audiences: "YOUR_PROJECT_ID"
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+paths:
+  # ── User Service (authenticated) ──────────────────────────────────────
+  /api/user/me:
+    get:
+      summary: Get or lazy-create user profile
+      operationId: getUserProfile
+      security:
+        - firebase: []
+      x-google-backend:
+        address: https://user-service-HASH-uc.a.run.app/me
+      responses:
+        "200":
+          description: User profile
+        "401":
+          description: Unauthorized
+
+    patch:
+      summary: Update user profile
+      operationId: updateUserProfile
+      security:
+        - firebase: []
+      x-google-backend:
+        address: https://user-service-HASH-uc.a.run.app/me
+      responses:
+        "200":
+          description: Updated profile
+        "401":
+          description: Unauthorized
+
+  /api/user/me/matches:
+    get:
+      summary: Get latest match results
+      operationId: getUserMatches
+      security:
+        - firebase: []
+      x-google-backend:
+        address: https://user-service-HASH-uc.a.run.app/me/matches
+      responses:
+        "200":
+          description: Match list
+        "401":
+          description: Unauthorized
+
+  # ── Job Discovery Service (public) ────────────────────────────────────
+  /api/jobs/jobs/{jobId}:
+    get:
+      summary: Get a single job by ID
+      operationId: getJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          type: integer
+      x-google-backend:
+        address: https://job-discovery-service-HASH-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "200":
+          description: Job detail
+        "404":
+          description: Job not found
+
+  /api/jobs/jobs/search:
+    post:
+      summary: Hybrid vector + metadata job search
+      operationId: searchJobs
+      x-google-backend:
+        address: https://job-discovery-service-HASH-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "200":
+          description: Search results
+
+  # ── Health ────────────────────────────────────────────────────────────
+  /health:
+    get:
+      summary: Gateway health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: OK

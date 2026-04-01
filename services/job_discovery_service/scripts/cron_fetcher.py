@@ -14,6 +14,7 @@ Flow:
 import asyncio
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -87,6 +88,15 @@ async def fetch_jobs(client: httpx.AsyncClient) -> list[dict]:
     return all_jobs
 
 
+def _parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+
+
 def normalize_job(raw: dict) -> dict:
     """Map JSearch response fields to our Job model columns."""
     return {
@@ -95,10 +105,11 @@ def normalize_job(raw: dict) -> dict:
         "company": raw.get("employer_name", "Unknown"),
         "description": raw.get("job_description"),
         "location": _build_location(raw),
-        "remote": raw.get("job_is_remote", False),
+        "remote": raw.get("job_is_remote"),
         "salary_min": raw.get("job_min_salary"),
         "salary_max": raw.get("job_max_salary"),
         "url": raw.get("job_apply_link"),
+        "posted_at": _parse_datetime(raw.get("job_posted_at_datetime_utc")),
         "source": "jsearch",
         "embedding_text": _build_embedding_text(raw),
     }
@@ -131,6 +142,7 @@ async def ingest_jobs(normalized: list[dict]) -> int:
                     salary_min=job["salary_min"],
                     salary_max=job["salary_max"],
                     url=job["url"],
+                    posted_at=job["posted_at"],
                     source=job["source"],
                     embedding=emb,
                 )

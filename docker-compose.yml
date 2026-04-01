@@ -93,18 +93,14 @@ services:
     restart: unless-stopped
 
   # ------------------------------------------------------------------ #
-  #  API Gateway  (Firebase auth → reverse proxy)
+  #  API Gateway  (nginx reverse proxy — see gateway/openapi.yml for
+  #  the production GCP API Gateway spec)
   # ------------------------------------------------------------------ #
   gateway:
     build:
       context: ./gateway
     ports:
       - "8000:8000"
-    environment:
-      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-big-data-project-f5241}
-      DEV_MODE: ${DEV_MODE:-true}
-      USER_SERVICE_URL: http://user-service:8000
-      JOB_SERVICE_URL: http://job-discovery-service:8000
     depends_on:
       - user-service
       - job-discovery-service

@@ -45,5 +45,6 @@ export interface JobDetail {
   salary_max: number | null;
   url: string | null;
   source: string | null;
+  posted_at: string | null;
   created_at: string | null;
 }

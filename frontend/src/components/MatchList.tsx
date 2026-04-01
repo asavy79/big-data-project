@@ -3,6 +3,22 @@ import { jobsApi, userApi } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
 import type { JobDetail } from "../types";
 
+function timeAgo(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  const seconds = Math.floor(
+    (Date.now() - new Date(dateStr).getTime()) / 1000,
+  );
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+
 export default function MatchList() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState<JobDetail[]>([]);
@@ -23,19 +39,8 @@ export default function MatchList() {
       }
 
       const latest = matches[0];
-      const jApi = jobsApi();
-      const results = await Promise.allSettled(
-        latest.matched_job_ids.map((id) => jApi.getJob(id)),
-      );
-
-      setJobs(
-        results
-          .filter(
-            (r): r is PromiseFulfilledResult<JobDetail> =>
-              r.status === "fulfilled",
-          )
-          .map((r) => r.value),
-      );
+      const fetchedJobs = await jobsApi().getJobsBatch(latest.matched_job_ids);
+      setJobs(fetchedJobs);
     } catch {
       setError("Could not load matches.");
     } finally {
@@ -93,7 +98,12 @@ export default function MatchList() {
                 <h3 className="font-medium text-gray-900 truncate">
                   {job.title}
                 </h3>
-                <p className="text-sm text-gray-600">{job.company}</p>
+                <p className="text-sm text-gray-600">
+                  {job.company}
+                  {timeAgo(job.posted_at ?? job.created_at) && (
+                    <span className="text-gray-400"> · {timeAgo(job.posted_at ?? job.created_at)}</span>
+                  )}
+                </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {job.location && (
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">

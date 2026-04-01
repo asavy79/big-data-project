@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     vertex_ai_location: str = "us-central1"
     embedding_model: str = "text-embedding-004"
     embedding_dimensions: int = 768
+    # Vertex text-embedding-004 caps input at ~20k tokens per request; LangChain
+    # batches multiple strings into one RPC, so we truncate and embed one doc per call.
+    max_embedding_input_chars: int = 12000
+    embedding_request_concurrency: int = 5
     internal_api_key: str = "changeme"
 
     # JSearch (RapidAPI)

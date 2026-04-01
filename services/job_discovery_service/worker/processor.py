@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from google.cloud import pubsub_v1
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from ..config import settings
 from ..database import async_session
@@ -55,10 +55,24 @@ async def _run_match(data: dict) -> None:
             query = query.where(
                 Job.location.ilike(f"%{request.filters.location}%")
             )
-        if request.filters.remote is not None:
-            query = query.where(Job.remote == request.filters.remote)
+        if request.filters.remote is not None and request.filters.remote == False:
+            query = query.where(
+                or_(Job.remote.is_(None), Job.remote == False)
+            )
         if request.filters.salary_min is not None:
-            query = query.where(Job.salary_max >= request.filters.salary_min)
+            query = query.where(
+                or_(
+                    Job.salary_max.is_(None),
+                    Job.salary_max >= request.filters.salary_min,
+                )
+            )
+        if request.filters.skills:
+            query = query.where(
+                or_(
+                    Job.description.is_(None),
+                    *(Job.description.ilike(f"%{skill}%") for skill in request.filters.skills),
+                )
+            )
 
         query = query.order_by(
             Job.embedding.cosine_distance(request.user_vector)

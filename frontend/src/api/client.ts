@@ -36,5 +36,11 @@ export function userApi(token: string) {
 export function jobsApi() {
   return {
     getJob: (id: number) => request<JobDetail>(`${JOBS_API}/jobs/${id}`),
+
+    getJobsBatch: (ids: number[]) => {
+      if (ids.length === 0) return Promise.resolve([]);
+      const params = ids.map((id) => `ids=${id}`).join("&");
+      return request<JobDetail[]>(`${JOBS_API}/jobs/batch?${params}`);
+    },
   };
 }

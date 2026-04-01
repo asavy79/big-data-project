@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Job
@@ -19,6 +19,19 @@ router = APIRouter()
 @router.get("/health")
 async def health():
     return {"status": "ok", "service": "job-discovery"}
+
+
+@router.get("/jobs/batch", response_model=list[JobResponse])
+async def get_jobs_batch(
+    ids: list[int] = Query(default=[]),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fetch multiple jobs by ID in a single request."""
+    if not ids:
+        return []
+    result = await db.execute(select(Job).where(Job.id.in_(ids)))
+    jobs = result.scalars().all()
+    return jobs
 
 
 @router.get("/jobs/{job_id}", response_model=JobResponse)
@@ -57,6 +70,11 @@ async def search_jobs(
         query = query.where(Job.salary_max >= f.salary_min)
     if f.salary_max is not None:
         query = query.where(Job.salary_min <= f.salary_max)
+    
+    if f.skills:
+        query = query.where(
+            or_(*(Job.description.ilike(f"%{skill}%") for skill in f.skills))
+        )
 
     query = (
         query.order_by(Job.embedding.cosine_distance(vector)).limit(request.limit)

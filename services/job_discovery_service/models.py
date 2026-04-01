@@ -15,11 +15,12 @@ class Job(Base):
     company = Column(String, nullable=False)
     description = Column(Text)
     location = Column(String)
-    remote = Column(Boolean, default=False)
+    remote = Column(Boolean, nullable=True)
     salary_min = Column(Integer)
     salary_max = Column(Integer)
     url = Column(String)
     source = Column(String)
+    posted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
