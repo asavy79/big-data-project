@@ -60,6 +60,13 @@ docker-compose.override.yml
 .LSOverride
 ._*
 
+# ── Terraform ────────────────────────────────────────────
+infrastructure/.terraform/
+infrastructure/*.tfstate
+infrastructure/*.tfstate.*
+infrastructure/.terraform.lock.hcl
+infrastructure/terraform.tfvars
+
 # ── Misc caches ──────────────────────────────────────────
 .cache/
 .pytest_cache/

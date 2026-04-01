@@ -1,0 +1,19 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# Do NOT commit terraform.tfvars — it contains secrets.
+
+project_id           = "your-gcp-project-id"
+region               = "us-central1"
+zone                 = "us-central1-a"
+
+# Must be globally unique
+frontend_bucket_name = "your-project-id-jobmatch-frontend"
+
+# Secrets — set these to real values
+internal_api_key = "generate-a-strong-random-string"
+rapidapi_key     = "your-rapidapi-key"
+
+# Cloud SQL tier (db-f1-micro for dev, db-custom-1-3840 for prod)
+db_tier = "db-f1-micro"
+
+# Docker image tag (update on each deploy)
+image_tag = "latest"
