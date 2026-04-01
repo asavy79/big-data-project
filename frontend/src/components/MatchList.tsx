@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { jobsApi, userApi } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
+import { useMatchNotifications } from "../hooks/useMatchNotifications";
 import type { JobDetail } from "../types";
 
 function timeAgo(dateStr: string | null): string | null {
@@ -47,6 +48,8 @@ export default function MatchList() {
       setLoading(false);
     }
   }, [user]);
+
+  useMatchNotifications(fetchMatches);
 
   useEffect(() => {
     fetchMatches();

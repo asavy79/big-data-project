@@ -17,6 +17,7 @@ from collections.abc import AsyncGenerator
 from fastapi import Header, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import settings
 from ..database import async_session
 
 logger = logging.getLogger(__name__)
@@ -61,3 +62,9 @@ async def get_current_uid(request: Request) -> str:
         return uid
 
     raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+
+async def verify_internal(x_internal_key: str = Header(...)):
+    """Lightweight guard for service-to-service endpoints."""
+    if x_internal_key != settings.internal_api_key:
+        raise HTTPException(status_code=403, detail="Invalid internal key")

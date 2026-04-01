@@ -5,8 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..embedder import generate_profile_embedding
 from ..messaging.publisher import publish_refresh_request
 from ..models import User, UserMatch
-from ..schemas import MatchesResponse, MatchOut, RefreshFilters, UserOut, UserUpdate
-from .auth import get_current_uid, get_db
+from ..schemas import (
+    ActiveUserOut,
+    MatchesResponse,
+    MatchOut,
+    RefreshFilters,
+    UserOut,
+    UserUpdate,
+)
+from .auth import get_current_uid, get_db, verify_internal
 
 router = APIRouter()
 
@@ -54,6 +61,7 @@ async def update_me(
                 remote=user.remote_preference,
                 salary_min=user.salary_min,
                 salary_max=user.salary_max,
+                skills=user.skills or None,
             ),
         )
 
@@ -80,6 +88,35 @@ async def get_matches(
         matches=[MatchOut.model_validate(r) for r in rows],
         total=len(rows),
     )
+
+
+# ------------------------------------------------------------------
+# GET /internal/active-users  — all users with embeddings (service-to-service)
+# ------------------------------------------------------------------
+@router.get(
+    "/internal/active-users",
+    response_model=list[ActiveUserOut],
+    dependencies=[Depends(verify_internal)],
+)
+async def get_active_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(User).where(User.embedding.is_not(None))
+    )
+    users = result.scalars().all()
+    return [
+        ActiveUserOut(
+            user_id=u.id,
+            user_vector=list(u.embedding),
+            filters=RefreshFilters(
+                location=u.location,
+                remote=u.remote_preference,
+                salary_min=u.salary_min,
+                salary_max=u.salary_max,
+                skills=u.skills,
+            ),
+        )
+        for u in users
+    ]
 
 
 # ------------------------------------------------------------------

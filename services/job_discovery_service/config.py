@@ -4,8 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/jobdb"
     gcp_project_id: str = ""
-    pubsub_subscription: str = "user-refresh-requested-sub"
-    pubsub_topic_matches: str = "matches-calculated"
+    pubsub_topic_ingested: str = "jobs-ingested"
     vertex_ai_location: str = "us-central1"
     embedding_model: str = "text-embedding-004"
     embedding_dimensions: int = 768

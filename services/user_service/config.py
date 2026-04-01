@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     pubsub_topic_refresh: str = "user-refresh-requested"
     pubsub_subscription_matches: str = "matches-calculated-sub"
 
+    # Service-to-service auth
+    internal_api_key: str = "changeme"
+
     # Vertex AI / LangChain embeddings
     vertex_ai_location: str = "us-central1"
     embedding_model: str = "text-embedding-004"

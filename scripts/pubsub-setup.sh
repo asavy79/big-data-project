@@ -23,6 +23,8 @@ curl -s -X PUT \
   "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/topics/user-refresh-requested"
 curl -s -X PUT \
   "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/topics/matches-calculated"
+curl -s -X PUT \
+  "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/topics/jobs-ingested"
 
 curl -s -X PUT \
   "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/subscriptions/user-refresh-requested-sub" \
@@ -33,6 +35,11 @@ curl -s -X PUT \
   "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/subscriptions/matches-calculated-sub" \
   -H "Content-Type: application/json" \
   -d "{\"topic\": \"projects/${PROJECT_ID}/topics/matches-calculated\"}"
+
+curl -s -X PUT \
+  "http://localhost:${PORT}/v1/projects/${PROJECT_ID}/subscriptions/jobs-ingested-sub" \
+  -H "Content-Type: application/json" \
+  -d "{\"topic\": \"projects/${PROJECT_ID}/topics/jobs-ingested\"}"
 
 echo ""
 echo "Pub/Sub emulator ready with topics and subscriptions."

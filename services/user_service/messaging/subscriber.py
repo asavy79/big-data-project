@@ -1,6 +1,7 @@
-"""Subscribes to the *matches-calculated* topic.  When the Job Discovery
-Service finishes matching, it publishes results here.  This subscriber
-persists them into the user_matches table and clears the needs_refresh flag.
+"""Subscribes to the *matches-calculated* topic.  When the Matching Service
+finishes matching, it publishes results here.  This subscriber persists them
+into the user_matches table, clears the needs_refresh flag, and broadcasts a
+WebSocket notification to the connected user.
 """
 
 import asyncio
@@ -11,6 +12,7 @@ from datetime import datetime
 from google.cloud import pubsub_v1
 from sqlalchemy import select, update
 
+from ..api.ws import manager
 from ..config import settings
 from ..database import async_session
 from ..models import User, UserMatch
@@ -59,6 +61,10 @@ async def _save_match(data: dict) -> None:
         "Saved %d matches for user %s",
         len(result.matched_job_ids),
         result.user_id,
+    )
+
+    await manager.notify_user(
+        result.user_id, {"type": "matches_ready"}
     )
 
 

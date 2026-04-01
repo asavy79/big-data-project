@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..messaging.publisher import publish_jobs_ingested
 from ..models import Job
 from ..schemas import (
     IngestResult,
@@ -124,4 +125,8 @@ async def ingest_jobs(
         ingested += 1
 
     await db.commit()
+
+    if ingested > 0:
+        await publish_jobs_ingested(ingested)
+
     return IngestResult(ingested=ingested, total_submitted=len(request.jobs))

@@ -13,6 +13,7 @@ from sqlalchemy import func, select
 
 from .config import settings
 from .database import async_session
+from .messaging.publisher import publish_jobs_ingested
 from .models import Job
 from .worker.embedder import generate_embeddings_batch
 
@@ -164,3 +165,6 @@ async def seed_jobs_if_empty() -> None:
         await db.commit()
 
     logger.info("Seeded %d jobs into the database", ingested)
+
+    if ingested > 0:
+        await publish_jobs_ingested(ingested)

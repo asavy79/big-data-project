@@ -58,6 +58,7 @@ class RefreshFilters(BaseModel):
     remote: bool | None = None
     salary_min: int | None = None
     salary_max: int | None = None
+    skills: list[str] | None = None
 
 
 class RefreshRequest(BaseModel):
@@ -72,3 +73,12 @@ class MatchResult(BaseModel):
     user_id: str
     matched_job_ids: list[int]
     timestamp: datetime
+
+
+# ---------------------------------------------------------------------------
+# Internal API (service-to-service)
+# ---------------------------------------------------------------------------
+class ActiveUserOut(BaseModel):
+    user_id: str
+    user_vector: list[float]
+    filters: RefreshFilters = RefreshFilters()

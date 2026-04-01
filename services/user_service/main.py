@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from .api.routes import router
+from .api.ws import router as ws_router
 from .database import init_db
 from .messaging.subscriber import start_subscriber
 
@@ -38,3 +39,4 @@ app = FastAPI(
 )
 
 app.include_router(router)
+app.include_router(ws_router)
