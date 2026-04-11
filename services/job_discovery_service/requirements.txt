@@ -1,5 +1,6 @@
 fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
+uvicorn[standard]>=0.32.0,<1.0.0
+websockets>=13.0,<14.0
 
 # Async Postgres + pgvector
 sqlalchemy[asyncio]>=2.0.35

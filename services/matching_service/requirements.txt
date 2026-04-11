@@ -1,5 +1,6 @@
 fastapi>=0.115
-uvicorn[standard]>=0.34
+uvicorn[standard]>=0.34,<1.0.0
+websockets>=13.0,<14.0
 httpx>=0.28
 google-cloud-pubsub>=2.27
 pydantic-settings>=2.7
