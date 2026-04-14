@@ -130,7 +130,7 @@ services:
     build:
       context: ./gateway
     ports:
-      - "8000:8000"
+      - "8000:8080"
     depends_on:
       - user-service
       - job-discovery-service

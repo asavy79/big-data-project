@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { gatewayWebSocketUrl } from "../config";
 import { useAuth } from "../contexts/AuthContext";
 
 const MAX_RECONNECT_DELAY_MS = 30_000;
@@ -25,8 +26,10 @@ export function useMatchNotifications(onMatchReady: () => void) {
       if (stopped) return;
 
       const token = await user!.getIdToken();
-      const proto = window.location.protocol === "https:" ? "wss" : "ws";
-      ws = new WebSocket(`${proto}://${window.location.host}/api/user/ws?token=${token}`);
+      const q = new URLSearchParams({ token });
+      ws = new WebSocket(
+        gatewayWebSocketUrl(`/api/user/ws?${q.toString()}`),
+      );
 
       ws.onopen = () => {
         attempt = 0;

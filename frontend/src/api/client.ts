@@ -1,7 +1,8 @@
 import type { JobDetail, MatchesResponse, UserProfile, UserUpdate } from "../types";
+import { gatewayBaseUrl } from "../config";
 
-const USER_API = "/api/user";
-const JOBS_API = "/api/jobs";
+const USER_API = `${gatewayBaseUrl}/api/user`;
+const JOBS_API = `${gatewayBaseUrl}/api/jobs`;
 
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(url, options);
