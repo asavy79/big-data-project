@@ -1,8 +1,13 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/jobdb"
+    # Required — set DATABASE_URL in env (never defaults to localhost in production).
+    database_url: str = Field(
+        ...,
+        description="Async SQLAlchemy URL; set env DATABASE_URL",
+    )
 
     # GCP
     gcp_project_id: str = ""

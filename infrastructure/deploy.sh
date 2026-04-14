@@ -53,8 +53,9 @@ if [ "$DEPLOY_SERVICES" = true ]; then
     for svc in "${SERVICES[@]}"; do
         echo "==> Building ${svc}..."
         docker build \
+            -f "${PROJECT_ROOT}/services/${svc}/Dockerfile" \
             -t "${AR_REPO}/${svc}:${IMAGE_TAG}" \
-            "${PROJECT_ROOT}/services/${svc}/"
+            "${PROJECT_ROOT}"
 
         echo "==> Pushing ${svc}..."
         docker push "${AR_REPO}/${svc}:${IMAGE_TAG}"

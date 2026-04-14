@@ -42,10 +42,12 @@ services:
   # ------------------------------------------------------------------ #
   job-discovery-service:
     build:
-      context: ./services/job_discovery_service
+      context: .
+      dockerfile: services/job_discovery_service/Dockerfile
     ports:
       - "8001:8000"
     environment:
+      PORT: "8000"
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-jobdb}
       GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
       VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
@@ -71,10 +73,12 @@ services:
   # ------------------------------------------------------------------ #
   user-service:
     build:
-      context: ./services/user_service
+      context: .
+      dockerfile: services/user_service/Dockerfile
     ports:
       - "8002:8000"
     environment:
+      PORT: "8000"
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-jobdb}
       GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
       VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
@@ -98,10 +102,12 @@ services:
   # ------------------------------------------------------------------ #
   matching-service:
     build:
-      context: ./services/matching_service
+      context: .
+      dockerfile: services/matching_service/Dockerfile
     ports:
       - "8003:8000"
     environment:
+      PORT: "8000"
       GCP_PROJECT_ID: ${GCP_PROJECT_ID:-local-project}
       JOB_SERVICE_URL: http://job-discovery-service:8000
       USER_SERVICE_URL: http://user-service:8000
