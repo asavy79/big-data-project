@@ -87,6 +87,7 @@ services:
       PUBSUB_TOPIC_REFRESH: ${PUBSUB_TOPIC_REFRESH:-user-refresh-requested}
       PUBSUB_SUBSCRIPTION_MATCHES: ${PUBSUB_SUBSCRIPTION_MATCHES:-matches-calculated-sub}
       PUBSUB_EMULATOR_HOST: pubsub-emulator:8085
+      PUBSUB_USE_PULL_SUBSCRIBER: "false"
       GOOGLE_APPLICATION_CREDENTIALS: /gcp/adc.json
     volumes:
       - ~/.config/gcloud/application_default_credentials.json:/gcp/adc.json:ro
@@ -113,6 +114,7 @@ services:
       USER_SERVICE_URL: http://user-service:8000
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-changeme}
       PUBSUB_EMULATOR_HOST: pubsub-emulator:8085
+      PUBSUB_USE_PULL_SUBSCRIBER: "false"
     depends_on:
       pubsub-emulator:
         condition: service_healthy

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -32,6 +32,14 @@ class JobResponse(BaseModel):
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+    @field_validator("remote", mode="before")
+    @classmethod
+    def _remote_null_to_false(cls, v: object) -> object:
+        # DB column jobs.remote is nullable; Pydantic bool rejects None.
+        if v is None:
+            return False
+        return v
 
 
 # ---------------------------------------------------------------------------

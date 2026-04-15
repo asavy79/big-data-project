@@ -5,9 +5,9 @@ WebSocket notification to the connected user.
 """
 
 import asyncio
+import base64
 import json
 import logging
-from datetime import datetime
 
 from google.cloud import pubsub_v1
 from sqlalchemy import select, update
@@ -24,6 +24,14 @@ _subscriber: pubsub_v1.SubscriberClient | None = None
 _main_loop: asyncio.AbstractEventLoop | None = None
 
 
+def decode_pubsub_push_message_data(body: dict) -> dict:
+    """Parse a Pub/Sub push JSON body and return the decoded application payload."""
+    msg = body.get("message") or {}
+    raw_b64 = msg.get("data") or ""
+    decoded = base64.b64decode(raw_b64).decode("utf-8")
+    return json.loads(decoded)
+
+
 def _get_subscriber() -> pubsub_v1.SubscriberClient:
     global _subscriber
     if _subscriber is None:
@@ -31,7 +39,7 @@ def _get_subscriber() -> pubsub_v1.SubscriberClient:
     return _subscriber
 
 
-async def _save_match(data: dict) -> None:
+async def process_matches_calculated(data: dict) -> None:
     result = MatchResult(**data)
 
     async with async_session() as db:
@@ -71,7 +79,7 @@ async def _save_match(data: dict) -> None:
 def _on_message(message: pubsub_v1.subscriber.message.Message) -> None:
     try:
         data = json.loads(message.data.decode("utf-8"))
-        future = asyncio.run_coroutine_threadsafe(_save_match(data), _main_loop)
+        future = asyncio.run_coroutine_threadsafe(process_matches_calculated(data), _main_loop)
         future.result()
         message.ack()
     except Exception:
@@ -83,6 +91,10 @@ async def start_subscriber() -> pubsub_v1.subscriber.futures.StreamingPullFuture
     """Start the Pub/Sub pull subscriber for matches-calculated."""
     global _main_loop
     _main_loop = asyncio.get_running_loop()
+
+    if not settings.pubsub_use_pull_subscriber:
+        logger.info("Pub/Sub streaming pull disabled — using push HTTP endpoint")
+        return None
 
     if not settings.gcp_project_id:
         logger.warning("GCP_PROJECT_ID not set — Pub/Sub subscriber disabled")

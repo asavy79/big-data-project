@@ -13,7 +13,7 @@ set -euo pipefail
 #   ./scripts/deploy-services.sh
 #
 # Optional env overrides:
-#   REGION=us-central1 REPOSITORY=jobmatch IMAGE_TAG=2026-04-13 ./scripts/deploy-services.sh
+#   REGION=us-central1 REPOSITORY=service-repo IMAGE_TAG=2026-04-13 ./scripts/deploy-services.sh
 #
 # Cloud Run runs linux/amd64. On Apple Silicon, Docker defaults to arm64 — builds fail unless
 # you target amd64 (set below). Builds may be slower due to emulation.
@@ -47,7 +47,7 @@ if [[ "${PROJECT_ID}" == *"@"* ]] || [[ "${PROJECT_ID}" == *"/"* ]]; then
 fi
 
 REGION="${REGION:-us-central1}"
-REPOSITORY="${REPOSITORY:-jobmatch}"
+REPOSITORY="${REPOSITORY:-service-repo}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 
 AR_PREFIX="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}"

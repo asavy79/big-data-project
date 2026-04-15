@@ -26,7 +26,7 @@ fi
 : "${PROJECT_ID:?Set PROJECT_ID}"
 : "${REGION:=us-central1}"
 
-AR_REPO="${REGION}-docker.pkg.dev/${PROJECT_ID}/jobmatch"
+AR_REPO="${REGION}-docker.pkg.dev/${PROJECT_ID}/service-repo"
 SERVICES=("job_discovery_service" "user_service" "matching_service")
 
 DEPLOY_SERVICES=true

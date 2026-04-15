@@ -1,6 +1,6 @@
 resource "google_artifact_registry_repository" "main" {
   location      = var.region
-  repository_id = "jobmatch"
+  repository_id = "service-repo"
   format        = "DOCKER"
   description   = "Docker images for JobMatch Cloud Run services"
 

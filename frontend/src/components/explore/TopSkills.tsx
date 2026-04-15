@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchTopSkills } from "../../api/dummyExploreData";
+import { fetchTopSkills } from "../../api/exploreApi";
 import type { Skill } from "../../types";
 
 interface Props {
@@ -10,15 +10,30 @@ interface Props {
 export default function TopSkills({ onSelect, selectedName }: Props) {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTopSkills().then((data) => {
-      setSkills(data);
-      setLoading(false);
-    });
+    setError(null);
+    fetchTopSkills()
+      .then((data) => {
+        setSkills(data);
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "Failed to load skills");
+        setLoading(false);
+      });
   }, []);
 
   const maxValue = skills.length > 0 ? skills[0].average_data_value : 1;
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6 text-sm text-red-700">
+        {error}
+      </div>
+    );
+  }
 
   if (loading) {
     return (

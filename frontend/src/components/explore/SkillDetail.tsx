@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchSkillDetail } from "../../api/dummyExploreData";
+import { fetchSkillDetail } from "../../api/exploreApi";
 import type { SkillDetail as SkillDetailType } from "../../types";
 
 interface Props {
@@ -11,14 +11,32 @@ interface Props {
 export default function SkillDetail({ skillName, onBack, onOccupationClick }: Props) {
   const [detail, setDetail] = useState<SkillDetailType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetchSkillDetail(skillName).then((data) => {
-      setDetail(data);
-      setLoading(false);
-    });
+    setError(null);
+    fetchSkillDetail(skillName)
+      .then((data) => {
+        setDetail(data);
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "Failed to load skill");
+        setLoading(false);
+      });
   }, [skillName]);
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+        <button onClick={onBack} className="text-sm text-blue-600 hover:text-blue-800 mb-4 cursor-pointer">
+          &larr; Back to list
+        </button>
+        <p className="text-sm text-red-700">{error}</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchTopOccupations } from "../../api/dummyExploreData";
+import { fetchTopOccupations } from "../../api/exploreApi";
 import type { Occupation } from "../../types";
 
 interface Props {
@@ -22,13 +22,28 @@ function formatEmployment(val: number | null): string {
 export default function TopOccupations({ onSelect, selectedCode }: Props) {
   const [occupations, setOccupations] = useState<Occupation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTopOccupations().then((data) => {
-      setOccupations(data);
-      setLoading(false);
-    });
+    setError(null);
+    fetchTopOccupations()
+      .then((data) => {
+        setOccupations(data);
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "Failed to load occupations");
+        setLoading(false);
+      });
   }, []);
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6 text-sm text-red-700">
+        {error}
+      </div>
+    );
+  }
 
   if (loading) {
     return (

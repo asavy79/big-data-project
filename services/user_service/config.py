@@ -9,8 +9,9 @@ class Settings(BaseSettings):
         description="Async SQLAlchemy URL; set env DATABASE_URL",
     )
 
-    # GCP
+    # GCP — set PUBSUB_USE_PULL_SUBSCRIBER=false for Cloud Run (push HTTP instead).
     gcp_project_id: str = ""
+    pubsub_use_pull_subscriber: bool = True
     pubsub_topic_refresh: str = "user-refresh-requested"
     pubsub_subscription_matches: str = "matches-calculated-sub"
 

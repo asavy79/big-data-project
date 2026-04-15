@@ -34,14 +34,21 @@ export function userApi(token: string) {
   };
 }
 
-export function jobsApi() {
+/** Pass the same Firebase ID token as userApi — needed if job-discovery verifies auth at the app layer. */
+export function jobsApi(token: string) {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+  };
   return {
-    getJob: (id: number) => request<JobDetail>(`${JOBS_API}/jobs/${id}`),
+    getJob: (id: number) =>
+      request<JobDetail>(`${JOBS_API}/jobs/${id}`, { headers }),
 
     getJobsBatch: (ids: number[]) => {
       if (ids.length === 0) return Promise.resolve([]);
       const params = ids.map((id) => `ids=${id}`).join("&");
-      return request<JobDetail[]>(`${JOBS_API}/jobs/batch?${params}`);
+      return request<JobDetail[]>(`${JOBS_API}/jobs/batch?${params}`, {
+        headers,
+      });
     },
   };
 }

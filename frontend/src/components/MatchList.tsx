@@ -40,7 +40,9 @@ export default function MatchList() {
       }
 
       const latest = matches[0];
-      const fetchedJobs = await jobsApi().getJobsBatch(latest.matched_job_ids);
+      const fetchedJobs = await jobsApi(token).getJobsBatch(
+        latest.matched_job_ids,
+      );
       setJobs(fetchedJobs);
     } catch {
       setError("Could not load matches.");
