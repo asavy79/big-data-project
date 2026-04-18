@@ -1,8 +1,9 @@
 /** Base URL for the nginx gateway (no trailing slash). Used for REST + WebSockets. */
 const DEFAULT_GATEWAY = "https://gateway-702721595408.us-central1.run.app";
 
-/** [Career Skill Demand API](https://career-backend-702721595408.us-central1.run.app/docs) — occupations & skills explore data. */
-const DEFAULT_CAREER_API = "https://career-backend-702721595408.us-central1.run.app";
+/** Career Skill Demand API with insights — [docs](https://career-insights-backend-702721595408.us-central1.run.app/docs). */
+const DEFAULT_INSIGHTS_API =
+  "https://career-insights-backend-702721595408.us-central1.run.app";
 
 export const gatewayBaseUrl: string =
   import.meta.env.VITE_GATEWAY_URL !== undefined
@@ -10,19 +11,17 @@ export const gatewayBaseUrl: string =
     : DEFAULT_GATEWAY;
 
 /**
- * Career backend base URL (no trailing slash).
- * In dev, Vite proxies `/career-api` → career backend (see vite.config.ts) because the API does not send CORS headers.
- * Override with `VITE_CAREER_API_URL` for a custom proxy or tunnel.
+ * Insights / career labor-market API base URL (no trailing slash).
+ * Called directly from the browser (CORS must allow your frontend origin).
+ * Override with `VITE_INSIGHTS_API_URL` or legacy `VITE_CAREER_API_URL`.
  */
-export const careerApiBaseUrl: string = (() => {
-  const fromEnv = import.meta.env.VITE_CAREER_API_URL;
+export const insightsApiBaseUrl: string = (() => {
+  const fromEnv =
+    import.meta.env.VITE_INSIGHTS_API_URL ?? import.meta.env.VITE_CAREER_API_URL;
   if (fromEnv !== undefined && String(fromEnv).trim() !== "") {
     return String(fromEnv).replace(/\/$/, "");
   }
-  if (import.meta.env.DEV) {
-    return "/career-api";
-  }
-  return DEFAULT_CAREER_API;
+  return DEFAULT_INSIGHTS_API;
 })();
 
 export function gatewayWebSocketUrl(pathAndQuery: string): string {

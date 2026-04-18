@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchTopOccupations } from "../../api/exploreApi";
+import { fetchTopOccupations } from "../../api/insightsApi";
 import type { Occupation } from "../../types";
 
 interface Props {

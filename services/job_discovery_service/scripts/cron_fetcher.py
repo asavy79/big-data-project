@@ -76,7 +76,10 @@ async def fetch_jobs(client: httpx.AsyncClient) -> list[dict]:
         }
 
         resp = await client.get(
-            JSEARCH_URL, headers=headers, params=params, timeout=30
+            JSEARCH_URL,
+            headers=headers,
+            params=params,
+            timeout=float(settings.jsearch_http_timeout_seconds),
         )
         resp.raise_for_status()
 

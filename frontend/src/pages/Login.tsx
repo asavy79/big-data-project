@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 function GoogleIcon() {
@@ -52,6 +53,13 @@ export default function Login() {
         <p className="mt-8 text-xs text-gray-400 leading-relaxed">
           Your profile is matched against thousands of job listings using
           pgvector similarity search
+        </p>
+
+        <p className="mt-6 text-sm text-gray-500">
+          <Link to="/explore" className="text-blue-600 hover:text-blue-800 font-medium">
+            Explore occupations &amp; skills
+          </Link>{" "}
+          without signing in.
         </p>
       </div>
     </div>

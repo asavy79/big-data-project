@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchTopSkills } from "../../api/exploreApi";
+import { fetchTopSkills } from "../../api/insightsApi";
 import type { Skill } from "../../types";
 
 interface Props {

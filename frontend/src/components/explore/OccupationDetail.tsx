@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchOccupationDetail } from "../../api/exploreApi";
-import type { OccupationDetail as OccupationDetailType } from "../../types";
+import { fetchInsightOccupationDetail } from "../../api/insightsApi";
+import type { InsightOccupationDetail as InsightOccupationDetailType } from "../../types";
 
 interface Props {
   socCode: string;
@@ -8,20 +8,20 @@ interface Props {
   onSkillClick: (name: string) => void;
 }
 
-function formatSalary(val: number | null): string {
+function formatSalary(val: number | null | undefined): string {
   if (val == null) return "—";
   return "$" + val.toLocaleString();
 }
 
 export default function OccupationDetail({ socCode, onBack, onSkillClick }: Props) {
-  const [detail, setDetail] = useState<OccupationDetailType | null>(null);
+  const [detail, setDetail] = useState<InsightOccupationDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchOccupationDetail(socCode)
+    fetchInsightOccupationDetail(socCode)
       .then((data) => {
         setDetail(data);
         setLoading(false);
@@ -55,7 +55,7 @@ export default function OccupationDetail({ socCode, onBack, onSkillClick }: Prop
     );
   }
 
-  if (!detail) {
+  if (!detail || !detail.found) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <button onClick={onBack} className="text-sm text-blue-600 hover:text-blue-800 mb-4 cursor-pointer">
@@ -66,8 +66,10 @@ export default function OccupationDetail({ socCode, onBack, onSkillClick }: Prop
     );
   }
 
-  const sal = detail.salary_and_education;
-  const maxSkillValue = detail.top_skills.length > 0 ? detail.top_skills[0].data_value : 1;
+  const maxSkillValue =
+    detail.top_skills.length > 0
+      ? Math.max(...detail.top_skills.map((s) => s.skill_score))
+      : 1;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -77,31 +79,31 @@ export default function OccupationDetail({ socCode, onBack, onSkillClick }: Prop
 
       <div className="mt-3">
         <span className="text-xs text-gray-400 font-mono">{detail.soc_code}</span>
-        <h2 className="text-xl font-bold text-gray-900 mt-0.5">{detail.title}</h2>
-        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{detail.description}</p>
+        <h2 className="text-xl font-bold text-gray-900 mt-0.5">{detail.title ?? "—"}</h2>
+        {detail.description && (
+          <p className="text-sm text-gray-600 mt-2 leading-relaxed">{detail.description}</p>
+        )}
       </div>
 
-      {sal && (
-        <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">Mean Salary</p>
-            <p className="text-lg font-semibold text-gray-900">{formatSalary(sal.a_mean)}</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">Median Salary</p>
-            <p className="text-lg font-semibold text-gray-900">{formatSalary(sal.a_median)}</p>
-          </div>
-          {sal.preferred_education && (
-            <div className="bg-gray-50 rounded-lg p-3 col-span-2 sm:col-span-1">
-              <p className="text-xs text-gray-500">Preferred Education</p>
-              <p className="text-sm font-semibold text-gray-900">{sal.preferred_education}</p>
-              {sal.preferred_edu_pct != null && (
-                <p className="text-xs text-gray-400">{sal.preferred_edu_pct}% of workers</p>
-              )}
-            </div>
-          )}
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-500">Mean Salary</p>
+          <p className="text-lg font-semibold text-gray-900">{formatSalary(detail.a_mean)}</p>
         </div>
-      )}
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-500">Median Salary</p>
+          <p className="text-lg font-semibold text-gray-900">{formatSalary(detail.a_median)}</p>
+        </div>
+        {detail.preferred_education && (
+          <div className="bg-gray-50 rounded-lg p-3 col-span-2 sm:col-span-1">
+            <p className="text-xs text-gray-500">Preferred Education</p>
+            <p className="text-sm font-semibold text-gray-900">{detail.preferred_education}</p>
+            {detail.preferred_edu_pct != null && (
+              <p className="text-xs text-gray-400">{detail.preferred_edu_pct}% of workers</p>
+            )}
+          </div>
+        )}
+      </div>
 
       {detail.top_skills.length > 0 && (
         <div className="mt-6">
@@ -118,13 +120,13 @@ export default function OccupationDetail({ socCode, onBack, onSkillClick }: Prop
                     {skill.skill_name}
                   </span>
                   <span className="text-xs text-gray-400 tabular-nums">
-                    {skill.data_value.toFixed(2)}
+                    {skill.skill_score.toFixed(2)}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-1.5">
                   <div
                     className="bg-indigo-500 h-1.5 rounded-full"
-                    style={{ width: `${(skill.data_value / maxSkillValue) * 100}%` }}
+                    style={{ width: `${(skill.skill_score / maxSkillValue) * 100}%` }}
                   />
                 </div>
               </button>
